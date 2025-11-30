@@ -1,0 +1,14 @@
+{
+  "include": [
+    "main.py"
+  ],
+  "exclude": [
+    "docs/",
+    "**/__pycache__"
+  ],
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "pythonVersion": "3.8",
+  "typeCheckingMode": "basic"
+}</content>
+<parameter name="filePath">pyrightconfig.json

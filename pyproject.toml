@@ -1,0 +1,52 @@
+[project]
+name = "mathgame"
+version = "1.0.0"
+description = "A Python CLI math practice game with x shuffling algorithm"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Math Game Team"}
+]
+maintainers = [
+    {name = "Math Game Team"}
+]
+keywords = ["math", "education", "cli", "algebra", "practice"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: Games/Entertainment :: Puzzle Games",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/mathgame"
+Documentation = "https://github.com/yourusername/mathgame/docs/"
+Repository = "https://github.com/yourusername/mathgame.git"
+Issues = "https://github.com/yourusername/mathgame/issues"
+
+[project.scripts]
+mathgame = "main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = ["main.py"]

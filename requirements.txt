@@ -1,0 +1,10 @@
+# Math Practice Game Requirements
+#
+# This project uses only Python standard library
+# No external dependencies required
+
+# For development (optional) - install with uv
+# uv add --dev pytest>=7.0.0      # For testing
+# uv add --dev black>=22.0.0      # For code formatting
+# uv add --dev flake8>=5.0.0      # For linting
+# uv add --dev mypy>=1.0.0        # For type checking
