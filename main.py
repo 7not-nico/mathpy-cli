@@ -120,23 +120,30 @@ class ProblemGenerator:
 
     def _generate_assignment(self, var_names, x_name, var_values):
         """Generate tuple assignment with x among multiple variables"""
-        # Like: var1 + x, var2 = var3, var2  meaning var1 + x = var3, var2 = var2 (always true)
+        # Like: var1 + x, var2 = var3, var4  meaning var1 + x = var3, var2 = var4
 
         other_vars = [v for v in var_names if v != x_name]
 
-        # First assignment includes x
+        # Choose variables
         var1 = random.choice(other_vars)
         var2 = random.choice(other_vars)
         var3 = random.choice(other_vars)
+        # Choose var4 such that var_values[var4] == var_values[var2] for consistency
+        possible_var4 = [v for v in other_vars if var_values[v] == var_values[var2]]
+        if possible_var4:
+            var4 = random.choice(possible_var4)
+        else:
+            var4 = var2  # fallback
+
         # For var1 + x = var3, x = var_values[var3] - var_values[var1]
         x = var_values[var3] - var_values[var1]
-        left_exprs = [f"{var1} + x", var2]  # Second is a variable
-        right_exprs = [var3, var2]  # So var1 + x = var3, var2 = var2
+        left_exprs = [f"{var1} + x", var2]
+        right_exprs = [var3, var4]
 
-        left_side = ", ".join(left_exprs)
-        right_side = ", ".join(right_exprs)
-
-        problem = f"{left_side} = {right_side}"
+        # Format as equations: expr1 = expr2, expr3 = expr4
+        eq1 = f"{left_exprs[0]} = {right_exprs[0]}"
+        eq2 = f"{left_exprs[1]} = {right_exprs[1]}"
+        problem = f"{eq1}, {eq2}"
 
         return problem, x
 
