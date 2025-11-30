@@ -186,8 +186,11 @@ class UserInterface:
     def display_problem(self, problem, known_vars=None):
         """Display the math problem"""
         if known_vars:
-            vars_str = ", ".join(f"{k}={v}" for k, v in known_vars.items())
-            print(f"Given {vars_str}: {problem}")
+            # Substitute known values into the problem
+            substituted = problem
+            for var, value in known_vars.items():
+                substituted = substituted.replace(var, str(value))
+            print(f"Problem: {substituted}")
         else:
             print(f"Problem: {problem}")
 
