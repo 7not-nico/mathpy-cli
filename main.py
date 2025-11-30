@@ -10,167 +10,133 @@ B_MAX = 20
 
 
 class ProblemGenerator:
-    """Single Responsibility: Generate random math problems with x in different positions"""
+    """Single Responsibility: Generate random math problems with x in different positions among multiple variables"""
 
     def generate(self):
-        """Generate a random solution and create a linear equation problem with maximum x position variety"""
-        x = random.randint(X_MIN, X_MAX)  # This is the solution we're looking for
+        """Generate a random solution and create a problem with multiple variables and x shuffled around"""
+        # Choose number of variables: 2 to 5
+        n_vars = random.randint(2, 5)
+        var_names = ["a", "b", "c", "d", "e"][:n_vars]
 
-        # Randomly choose equation format - maximum variety!
-        equation_types = [
-            "standard",
-            "isolated_left",
-            "isolated_right",
-            "simple_add",
-            "simple_subtract",
-            "coefficient_isolated",
-            "fractional",
-            "flipped_standard",
-            "middle_term",
-            "nested_operation",
+        # Choose which variable is x (the unknown)
+        x_index = random.randint(0, n_vars - 1)
+        x_name = var_names[x_index]
+
+        # Assign values to known variables
+        var_values = {}
+        for i, name in enumerate(var_names):
+            if i == x_index:
+                var_values[name] = None  # x is unknown
+            else:
+                var_values[name] = random.randint(X_MIN, X_MAX)
+
+        # Choose problem type: equation or assignment
+        problem_types = ["equation", "assignment"]
+        problem_type = random.choice(problem_types)
+
+        if problem_type == "equation":
+            # Generate linear equation with multiple variables
+            problem, x_value = self._generate_equation(var_names, x_name, var_values)
+        else:
+            # Generate assignment with multiple variables
+            problem, x_value = self._generate_assignment(var_names, x_name, var_values)
+
+        # Prepare known variables for display
+        known_vars = {name: val for name, val in var_values.items() if val is not None}
+
+        return problem, x_value, known_vars
+
+    def _generate_equation(self, var_names, x_name, var_values):
+        """Generate a linear equation with x among multiple variables"""
+        # Choose equation pattern
+        patterns = [
+            "simple_linear",  # var1 + x = var2
+            "coeff_linear",  # coeff*x + var = target
+            "multiple_terms",  # var1 + var2 + x = var3
+            "isolated_x",  # x = var1 + var2
+            "coeff_isolated",  # coeff*x = var1 + var2
         ]
-        equation_type = random.choice(equation_types)
+        pattern = random.choice(patterns)
 
-        if equation_type == "standard":
-            # ax + b = c or ax - b = c
-            a = random.randint(A_MIN, A_MAX)
-            b = random.randint(B_MIN, B_MAX)
-            answer = a * x + b
+        x = random.randint(X_MIN, X_MAX)  # The solution
 
-            if b >= 0:
-                problem = f"{a}x + {b} = {answer}"
+        if pattern == "simple_linear":
+            # var1 + x = var2 or x + var1 = var2
+            other_vars = [v for v in var_names if v != x_name]
+            var1 = random.choice(other_vars)
+            var2 = random.choice([v for v in other_vars if v != var1] or [var1])
+
+            x = var_values[var2] - var_values[var1]
+
+            position = random.choice(["left", "right"])
+            if position == "left":
+                problem = f"{var1} + x = {var2}"
             else:
-                problem = f"{a}x - {abs(b)} = {answer}"
+                problem = f"x + {var1} = {var2}"
 
-        elif equation_type == "isolated_left":
-            # x = c ± b
-            b = random.randint(B_MIN, B_MAX)
-            operation = random.choice(["+", "-"])
-            if operation == "+":
-                answer = x + b
-                if b >= 0:
-                    problem = f"x = {answer} - {b}"
-                else:
-                    problem = f"x = {answer} + {abs(b)}"
-            else:
-                answer = x - b
-                if b >= 0:
-                    problem = f"x = {answer} + {b}"
-                else:
-                    problem = f"x = {answer} - {abs(b)}"
+        elif pattern == "coeff_linear":
+            # coeff*x + var1 = var2
+            coeff = random.randint(A_MIN, A_MAX)
+            other_vars = [v for v in var_names if v != x_name]
+            var1 = random.choice(other_vars)
+            var2 = random.choice(other_vars)
+            x = (var_values[var2] - var_values[var1]) // coeff  # Ensure integer
+            problem = f"{coeff}x + {var1} = {var2}"
 
-        elif equation_type == "isolated_right":
-            # c ± b = x
-            b = random.randint(B_MIN, B_MAX)
-            operation = random.choice(["+", "-"])
-            if operation == "+":
-                left_side = x + b
-                if b >= 0:
-                    problem = f"{left_side} - {b} = x"
-                else:
-                    problem = f"{left_side} + {abs(b)} = x"
+        elif pattern == "multiple_terms":
+            # var1 + var2 + x = var3
+            other_vars = [v for v in var_names if v != x_name]
+            if len(other_vars) >= 3:
+                var1, var2, var3 = random.sample(other_vars, 3)
             else:
-                left_side = x - b
-                if b >= 0:
-                    problem = f"{left_side} + {b} = x"
-                else:
-                    problem = f"{left_side} - {abs(b)} = x"
+                var1 = random.choice(other_vars)
+                var2 = random.choice(other_vars)
+                var3 = random.choice(other_vars)
+            x = var_values[var3] - var_values[var1] - var_values[var2]
+            problem = f"{var1} + {var2} + x = {var3}"
 
-        elif equation_type == "simple_add":
-            # x + b = c
-            b = random.randint(B_MIN, B_MAX)
-            answer = x + b
-            if b >= 0:
-                problem = f"x + {b} = {answer}"
+        elif pattern == "isolated_x":
+            # x = var1 + var2
+            other_vars = [v for v in var_names if v != x_name]
+            if len(other_vars) >= 2:
+                var1, var2 = random.sample(other_vars, 2)
             else:
-                problem = f"x - {abs(b)} = {answer}"
+                var1 = var2 = random.choice(other_vars)
+            x = var_values[var1] + var_values[var2]
+            problem = f"x = {var1} + {var2}"
 
-        elif equation_type == "simple_subtract":
-            # x - b = c
-            b = random.randint(B_MIN, B_MAX)
-            answer = x - b
-            if b >= 0:
-                problem = f"x - {b} = {answer}"
+        else:  # coeff_isolated
+            # coeff*x = var1 + var2
+            coeff = random.randint(A_MIN, A_MAX)
+            other_vars = [v for v in var_names if v != x_name]
+            if len(other_vars) >= 2:
+                var1, var2 = random.sample(other_vars, 2)
             else:
-                problem = f"x + {abs(b)} = {answer}"
+                var1 = var2 = random.choice(other_vars)
+            x = (var_values[var1] + var_values[var2]) // coeff
+            problem = f"{coeff}x = {var1} + {var2}"
 
-        elif equation_type == "coefficient_isolated":
-            # ax = c ± b (x with coefficient isolated)
-            a = random.randint(A_MIN, A_MAX)
-            b = random.randint(B_MIN, B_MAX)
-            operation = random.choice(["+", "-"])
-            if operation == "+":
-                right_side = a * x + b
-                if b >= 0:
-                    problem = f"{a}x = {right_side} - {b}"
-                else:
-                    problem = f"{a}x = {right_side} + {abs(b)}"
-            else:
-                right_side = a * x - b
-                if b >= 0:
-                    problem = f"{a}x = {right_side} + {b}"
-                else:
-                    problem = f"{a}x = {right_side} - {abs(b)}"
+        return problem, x
 
-        elif equation_type == "fractional":
-            # x = (c ± b) / a (fractional form)
-            a = random.randint(A_MIN, A_MAX)
-            b = random.randint(B_MIN, B_MAX)
-            operation = random.choice(["+", "-"])
-            if operation == "+":
-                numerator = a * x + b
-                if b >= 0:
-                    problem = f"x = ({numerator} - {b}) / {a}"
-                else:
-                    problem = f"x = ({numerator} + {abs(b)}) / {a}"
-            else:
-                numerator = a * x - b
-                if b >= 0:
-                    problem = f"x = ({numerator} + {b}) / {a}"
-                else:
-                    problem = f"x = ({numerator} - {abs(b)}) / {a}"
+    def _generate_assignment(self, var_names, x_name, var_values):
+        """Generate tuple assignment with x among multiple variables"""
+        # Like: var1 + x, var2 = var3, var2  meaning var1 + x = var3, var2 = var2 (always true)
 
-        elif equation_type == "flipped_standard":
-            # c = ax ± b (equation flipped)
-            a = random.randint(A_MIN, A_MAX)
-            b = random.randint(B_MIN, B_MAX)
-            left_side = a * x + b
-            if b >= 0:
-                problem = f"{left_side} = {a}x + {b}"
-            else:
-                problem = f"{left_side} = {a}x - {abs(b)}"
+        other_vars = [v for v in var_names if v != x_name]
 
-        elif equation_type == "middle_term":
-            # b ± ax = c (x in middle)
-            a = random.randint(A_MIN, A_MAX)
-            b = random.randint(B_MIN, B_MAX)
-            operation = random.choice(["+", "-"])
-            if operation == "+":
-                answer = b + a * x
-                problem = f"{b} + {a}x = {answer}"
-            else:
-                answer = b - a * x
-                problem = f"{b} - {a}x = {answer}"
+        # First assignment includes x
+        var1 = random.choice(other_vars)
+        var2 = random.choice(other_vars)
+        var3 = random.choice(other_vars)
+        # For var1 + x = var3, x = var_values[var3] - var_values[var1]
+        x = var_values[var3] - var_values[var1]
+        left_exprs = [f"{var1} + x", var2]  # Second is a variable
+        right_exprs = [var3, var2]  # So var1 + x = var3, var2 = var2
 
-        else:  # nested_operation
-            # (ax ± b) = c or c = (ax ± b)
-            a = random.randint(A_MIN, A_MAX)
-            b = random.randint(B_MIN, B_MAX)
-            operation = random.choice(["+", "-"])
-            if operation == "+":
-                left_expr = a * x + b
-                problem = (
-                    f"({a}x + {b}) = {left_expr}"
-                    if b >= 0
-                    else f"({a}x - {abs(b)}) = {left_expr}"
-                )
-            else:
-                left_expr = a * x - b
-                problem = (
-                    f"({a}x - {b}) = {left_expr}"
-                    if b >= 0
-                    else f"({a}x + {abs(b)}) = {left_expr}"
-                )
+        left_side = ", ".join(left_exprs)
+        right_side = ", ".join(right_exprs)
+
+        problem = f"{left_side} = {right_side}"
 
         return problem, x
 
@@ -210,9 +176,13 @@ class UserInterface:
         print("Welcome to Math Practice!")
         print("Solve for x in each equation. Type 'quit' to exit.\n")
 
-    def display_problem(self, problem):
+    def display_problem(self, problem, known_vars=None):
         """Display the math problem"""
-        print(f"Problem: {problem}")
+        if known_vars:
+            vars_str = ", ".join(f"{k}={v}" for k, v in known_vars.items())
+            print(f"Given {vars_str}: {problem}")
+        else:
+            print(f"Problem: {problem}")
 
     def get_user_input(self):
         """Get input from user"""
@@ -253,8 +223,8 @@ class MathGame:
 
         while True:
             # Generate and display problem
-            problem, solution = self.problem_generator.generate()
-            self.user_interface.display_problem(problem)
+            problem, solution, known_vars = self.problem_generator.generate()
+            self.user_interface.display_problem(problem, known_vars)
 
             # Get user input
             user_input = self.user_interface.get_user_input()
